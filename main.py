@@ -2,7 +2,7 @@
 from __future__ import annotations
 from dataclasses import dataclass, asdict, field
 from typing import List, Dict, Optional
-from flask import Flask, jsonify, request, render_template_string, abort
+from flask import Flask, jsonify, request, render_template, abort
 from functools import cmp_to_key
 
 app = Flask(__name__)
@@ -30,13 +30,11 @@ class Distributore:
 
     def to_dict(self) -> Dict:
         d = asdict(self)
-        # normalizza chiavi e tipi per l'API
         d["livello_carburante"] = {
             "benzina": float(self.livello_carburante.get("benzina", 0.0)),
             "diesel": float(self.livello_carburante.get("diesel", 0.0)),
         }
         return d
-
 
 # ------------------------------
 # "Database" in memoria
@@ -63,7 +61,6 @@ def same_prov(a: str, b: str) -> bool:
 def get_by_provincia(provincia: str) -> List[Distributore]:
     return [d for d in DISTRIBUTORI if same_prov(d.provincia, provincia) or same_prov(full_province_name(d.provincia), provincia) or same_prov(d.provincia, full_province_name(provincia))]
 
-# opzionale mapping semplice (puoi estenderlo)
 PROV_FULL = {
     "MI": "Milano",
     "TO": "Torino",
@@ -75,26 +72,18 @@ def full_province_name(code_or_name: str) -> str:
     code = code_or_name.strip().upper()
     if code in PROV_FULL:
         return PROV_FULL[code]
-    # se già full name, prova a rientrare il codice (non indispensabile)
     for k, v in PROV_FULL.items():
         if v.strip().upper() == code:
             return v
     return code_or_name
 
-
-# ------------------------------
-# API
-# ------------------------------
-
 @app.get("/api/distributori")
 def api_distributori():
-    """0. elenco ordinato su ID dei distributori (tutte le informazioni)"""
     ordered = sorted(DISTRIBUTORI, key=cmp_to_key(sort_by_id))
     return jsonify([d.to_dict() for d in ordered])
 
 @app.get("/api/distributori/provincia/<provincia>")
 def api_livelli_provincia(provincia: str):
-    """1. livello di carburante nei distributori di una provincia"""
     matches = get_by_provincia(provincia)
     if not matches:
         return jsonify({"provincia": provincia, "distributori": [], "totali_litri": {"benzina": 0.0, "diesel": 0.0}})
@@ -116,7 +105,6 @@ def api_livelli_provincia(provincia: str):
 
 @app.get("/api/distributori/<int:did>")
 def api_distributore_singolo(did: int):
-    """2. livello di carburante in un distributore specifico (più info)"""
     d = find_by_id(did)
     if not d:
         abort(404, description="Distributore non trovato")
@@ -124,7 +112,6 @@ def api_distributore_singolo(did: int):
 
 @app.get("/api/distributori/geo")
 def api_distributori_geo():
-    """3. dati geografici per la mappa (GeoJSON-like semplice)"""
     features = []
     for d in DISTRIBUTORI:
         features.append({
@@ -142,10 +129,6 @@ def api_distributori_geo():
 
 @app.post("/api/prezzi/provincia/<provincia>")
 def api_cambia_prezzi_provincia(provincia: str):
-    """
-    Cambiare il prezzo della benzina o del diesel in tutti i distributori di una provincia.
-    Body JSON: {"benzina": 1.899, "diesel": 1.799} (ambedue o anche solo uno)
-    """
     payload = request.get_json(silent=True) or {}
     benz = payload.get("benzina", None)
     dies = payload.get("diesel", None)
@@ -167,54 +150,20 @@ def api_cambia_prezzi_provincia(provincia: str):
 
     return jsonify({"provincia": provincia, "aggiornati": len(updated), "dettaglio": updated})
 
+@app.get("/")
+def index():
+    return render_template("index.html")
 
-# ------------------------------
-# Pagine Web (UI)
-# ------------------------------
+@app.get("/distributore/<int:did>")
+def dettaglio(did: int):
+    d = find_by_id(did)
+    if not d:
+        abort(404)
+    return render_template("dettaglio.html", d=d)
 
-INDEX_HTML = """
-<!doctype html>
-<html lang="it">
-<head>
-  <meta charset="utf-8">
-  <title>Iperstaroil – Monitoraggio Distributori</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css"
-    rel="stylesheet">
-  <style>
-    body { padding-bottom: 4rem; }
-    .badge-litri { font-variant-numeric: tabular-nums; }
-    .sticky-top { top: 0.5rem; }
-  </style>
-</head>
-<body>
-<nav class="navbar navbar-expand-lg bg-dark navbar-dark">
-  <div class="container-fluid">
-    <a class="navbar-brand" href="/">Iperstaroil</a>
-    <div class="navbar-nav">
-      <a class="nav-link" href="/mappa">Mappa</a>
-      <a class="nav-link" href="/api/distributori" target="_blank">API Distributori</a>
-    </div>
-  </div>
-</nav>
+@app.get("/mappa")
+def mappa():
+    return render_template("mappa.html")
 
-<div class="container my-3">
-  <div class="row g-3">
-    <div class="col-lg-4">
-      <div class="card sticky-top">
-        <div class="card-body">
-          <h5 class="card-title">Filtra per provincia</h5>
-          <div class="input-group mb-3">
-            <input id="provincia-input" class="form-control" placeholder="es. MI o Milano">
-            <button id="btn-filtra" class="btn btn-primary">Cerca</button>
-          </div>
-          <div id="prov-summary" class="small text-muted"></div>
-          <hr>
-          <h6 class="card-subtitle mb-2">Aggiorna prezzi (provincia)</h6>
-          <div class="mb-2">
-            <label class="form-label">Prezzo Benzina (€/L)</label>
-            <input id="prezzo-b" type="number" step="0.001" class="form-control" placeholder="es. 1.929">
-          </div>
-          <div class="mb-3">
-            <label
+if __name__ == "__main__":
+    app.run(debug=True)

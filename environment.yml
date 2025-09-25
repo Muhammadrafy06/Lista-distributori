@@ -1,0 +1,16 @@
+name: iperstaroil
+channels:
+  - conda-forge
+dependencies:
+  - python=3.11
+  - pip
+  - pip:
+      - Flask>=3.0
+      - gunicorn
+      - flask-cors
+      - firebase-admin>=6.5
+      - google-cloud-firestore>=2.16
+      - google-auth
+      - grpcio>=1.60
+      - requests
+      - typing_extensions
