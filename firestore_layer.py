@@ -1,9 +1,7 @@
-# firestore_layer.py
 import os, json, firebase_admin
 from typing import Dict, List, Optional, Tuple
 from firebase_admin import credentials, firestore as admin_firestore
 
-# --- Initialize Firebase Admin from env var (no file needed) ---
 if not firebase_admin._apps:
     sa_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
     if not sa_json:
@@ -15,9 +13,8 @@ if not firebase_admin._apps:
     cred = credentials.Certificate(sa_info)
     firebase_admin.initialize_app(cred)
 
-db = admin_firestore.client()  # Admin Firestore client
+db = admin_firestore.client()
 
-# --- Data layer ---
 COLL = "distributori"
 
 PROV_FULL = {

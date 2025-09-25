@@ -1,4 +1,3 @@
-# app.py
 from __future__ import annotations
 from dataclasses import dataclass, asdict, field
 from typing import List, Dict, Optional
@@ -11,7 +10,7 @@ app = Flask(__name__)
 class Distributore:
     id: int
     nome: str
-    provincia: str  # sigla o nome provincia (es: "MI", "Milano")
+    provincia: str
     lat: float
     lon: float
     livello_carburante: Dict[str, float] = field(default_factory=lambda: {"benzina": 0.0, "diesel": 0.0})  # in litri
@@ -35,10 +34,6 @@ class Distributore:
             "diesel": float(self.livello_carburante.get("diesel", 0.0)),
         }
         return d
-
-# ------------------------------
-# "Database" in memoria
-# ------------------------------
 
 DISTRIBUTORI: List[Distributore] = [
     Distributore(1, "Iperstaroil Milano Nord", "MI", 45.515, 9.205, {"benzina": 12000, "diesel": 15000}, 1.949, 1.829),

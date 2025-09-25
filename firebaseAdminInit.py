@@ -14,16 +14,13 @@ def _init_app_from_env():
         )
 
     sa_info = json.loads(sa_json)
-    # projectId is optional here; Admin SDK infers it from the SA JSON.
     cred = credentials.Certificate(sa_info)
     return firebase_admin.initialize_app(cred)
 
-# Initialize once at import
 firebase_app = _init_app_from_env()
 
-# Firestore client using Admin app (this uses Admin credentials; no ADC)
 db = admin_firestore.client(app=firebase_app)
-# firebase_admin_init.py
+
 import os, json, firebase_admin
 from firebase_admin import credentials, firestore as admin_firestore
 
@@ -39,12 +36,10 @@ def _init_app_from_env():
         )
 
     sa_info = json.loads(sa_json)
-    # projectId is optional here; Admin SDK infers it from the SA JSON.
+
     cred = credentials.Certificate(sa_info)
     return firebase_admin.initialize_app(cred)
 
-# Initialize once at import
 firebase_app = _init_app_from_env()
 
-# Firestore client using Admin app (this uses Admin credentials; no ADC)
 db = admin_firestore.client(app=firebase_app)

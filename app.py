@@ -1,17 +1,10 @@
-# app.py
 from __future__ import annotations
 from flask import Flask, jsonify, request, render_template, abort
 
-# Use the Admin-based data layer
-from firestore_layer import (
-    list_all_ordered, get_by_id, get_by_provincia, geo_all, update_prices_by_province
-)
+from firestore_layer import (list_all_ordered, get_by_id, get_by_provincia, geo_all, update_prices_by_province)
+
 
 app = Flask(__name__)
-
-# ------------------------------
-# API
-# ------------------------------
 
 @app.get("/api/distributori")
 def api_distributori():
@@ -66,7 +59,7 @@ def api_cambia_prezzi_provincia(provincia: str):
     benz = payload.get("benzina")
     dies = payload.get("diesel")
     try:
-        n, updated = update_prices_by_provincia(provincia, benzina=benz, diesel=dies)
+        n, updated = update_prices_by_province(provincia, benzina=benz, diesel=dies)
     except ValueError as e:
         abort(400, description=str(e))
     if n == 0:
@@ -90,7 +83,8 @@ def dettaglio(did: int):
 
 @app.get("/mappa")
 def mappa():
-    return render_template("mappa.html")
+    html = render_template("mappa.html")
+    return app.response_class(html, mimetype="text/html; charset=utf-8")
 
 if __name__ == "__main__":
     app.run(debug=True)
