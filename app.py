@@ -61,6 +61,7 @@ def same_prov(a: str, b: str) -> bool:
 def get_by_provincia(provincia: str) -> List[Distributore]:
     return [d for d in DISTRIBUTORI if same_prov(d.provincia, provincia) or same_prov(full_province_name(d.provincia), provincia) or same_prov(d.provincia, full_province_name(provincia))]
 
+# opzionale mapping semplice (puoi estenderlo)
 PROV_FULL = {
     "MI": "Milano",
     "TO": "Torino",
@@ -76,6 +77,10 @@ def full_province_name(code_or_name: str) -> str:
         if v.strip().upper() == code:
             return v
     return code_or_name
+
+# ------------------------------
+# API
+# ------------------------------
 
 @app.get("/api/distributori")
 def api_distributori():
@@ -149,6 +154,10 @@ def api_cambia_prezzi_provincia(provincia: str):
         abort(400, description=str(e))
 
     return jsonify({"provincia": provincia, "aggiornati": len(updated), "dettaglio": updated})
+
+# ------------------------------
+# Pagine Web (UI)
+# ------------------------------
 
 @app.get("/")
 def index():
