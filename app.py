@@ -1,9 +1,8 @@
 # app.py
 from __future__ import annotations
 from flask import Flask, jsonify, request, render_template, abort
-from typing import Optional
 
-# NEW: import Firestore data layer
+# Use the Admin-based data layer
 from firestore_layer import (
     list_all_ordered, get_by_id, get_by_provincia, geo_all, update_prices_by_province
 )
@@ -64,10 +63,10 @@ def api_distributori_geo():
 @app.post("/api/prezzi/provincia/<provincia>")
 def api_cambia_prezzi_provincia(provincia: str):
     payload = request.get_json(silent=True) or {}
-    benz = payload.get("benzina", None)
-    dies = payload.get("diesel", None)
+    benz = payload.get("benzina")
+    dies = payload.get("diesel")
     try:
-        n, updated = update_prices_by_province(provincia, benzina=benz, diesel=dies)
+        n, updated = update_prices_by_provincia(provincia, benzina=benz, diesel=dies)
     except ValueError as e:
         abort(400, description=str(e))
     if n == 0:
@@ -75,7 +74,7 @@ def api_cambia_prezzi_provincia(provincia: str):
     return jsonify({"provincia": provincia, "aggiornati": n, "dettaglio": updated})
 
 # ------------------------------
-# Pagine Web (UI) — unchanged
+# UI (templates unchanged)
 # ------------------------------
 
 @app.get("/")
@@ -87,7 +86,6 @@ def dettaglio(did: int):
     d = get_by_id(did)
     if not d:
         abort(404)
-    # dicts work fine with dot access in Jinja
     return render_template("dettaglio.html", d=d)
 
 @app.get("/mappa")

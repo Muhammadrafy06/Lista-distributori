@@ -1,17 +1,33 @@
+# firestore_layer.py
+import os, json, firebase_admin
 from typing import Dict, List, Optional, Tuple
-from google.cloud import firestore
+from firebase_admin import credentials, firestore as admin_firestore
 
-db = firestore.Client()
+# --- Initialize Firebase Admin from env var (no file needed) ---
+if not firebase_admin._apps:
+    sa_json = os.environ.get("FIREBASE_SERVICE_ACCOUNT")
+    if not sa_json:
+        raise RuntimeError(
+            "FIREBASE_SERVICE_ACCOUNT is missing. "
+            "Add it as a Codespaces secret with the FULL service-account JSON."
+        )
+    sa_info = json.loads(sa_json)
+    cred = credentials.Certificate(sa_info)
+    firebase_admin.initialize_app(cred)
+
+db = admin_firestore.client()  # Admin Firestore client
+
+# --- Data layer ---
 COLL = "distributori"
 
-# Optional map (extend as needed)
 PROV_FULL = {
     "MI": "Milano",
     "TO": "Torino",
     "RM": "Roma",
     "NA": "Napoli",
-    "BO": "Bologna"
+    "BO": "Bologna",
 }
+
 def _full_name(code_or_name: str) -> str:
     code = (code_or_name or "").strip().upper()
     if code in PROV_FULL:
@@ -21,12 +37,8 @@ def _full_name(code_or_name: str) -> str:
             return v
     return code_or_name
 
-def _same_prov(a: str, b: str) -> bool:
-    return (a or "").strip().lower() == (b or "").strip().lower()
-
-def _normalize(doc: firestore.DocumentSnapshot) -> Dict:
+def _normalize(doc: admin_firestore.DocumentSnapshot) -> Dict:
     d = doc.to_dict() or {}
-    # enforce types for safety
     d["id"] = int(d["id"])
     d["lat"] = float(d["lat"])
     d["lon"] = float(d["lon"])
@@ -48,23 +60,16 @@ def get_by_id(did: int) -> Optional[Dict]:
     return _normalize(doc) if doc.exists else None
 
 def get_by_provincia(provincia: str) -> List[Dict]:
-    """
-    Matches both province code (e.g., 'MI') and full name ('Milano').
-    We do two equality queries and merge (cheap for small datasets).
-    """
     code = provincia.strip().upper()
     name = _full_name(provincia)
-
     docs = []
     for value in {code, name}:
         if not value:
             continue
         docs.extend(db.collection(COLL).where("provincia", "==", value).stream())
-
-    # de-duplicate by document id
     seen, out = set(), []
     for doc in docs:
-        if doc.id in seen: 
+        if doc.id in seen:
             continue
         seen.add(doc.id)
         out.append(_normalize(doc))
