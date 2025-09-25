@@ -1,0 +1,11 @@
+prefix=/workspaces/Lista-distributori/venv
+exec_prefix=/workspaces/Lista-distributori/venv
+libdir=/workspaces/Lista-distributori/venv/lib
+includedir=/workspaces/Lista-distributori/venv/include
+
+Name: uuid
+Description: Universally unique id library
+Version: 2.41.2
+Cflags: -I${includedir}/uuid
+Libs.private:  -lpthread
+Libs: -L${libdir} -luuid

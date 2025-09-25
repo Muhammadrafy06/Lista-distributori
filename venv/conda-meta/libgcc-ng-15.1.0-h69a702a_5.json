@@ -1,0 +1,31 @@
+{
+  "build": "h69a702a_5",
+  "build_number": 5,
+  "channel": "https://conda.anaconda.org/conda-forge/linux-64",
+  "constrains": [],
+  "depends": [
+    "libgcc 15.1.0 h767d61c_5"
+  ],
+  "extracted_package_dir": "/opt/conda/pkgs/libgcc-ng-15.1.0-h69a702a_5",
+  "files": [],
+  "fn": "libgcc-ng-15.1.0-h69a702a_5.conda",
+  "license": "GPL-3.0-only WITH GCC-exception-3.1",
+  "link": {
+    "source": "/opt/conda/pkgs/libgcc-ng-15.1.0-h69a702a_5",
+    "type": 1
+  },
+  "md5": "069afdf8ea72504e48d23ae1171d951c",
+  "name": "libgcc-ng",
+  "package_tarball_full_path": "/opt/conda/pkgs/libgcc-ng-15.1.0-h69a702a_5.conda",
+  "paths_data": {
+    "paths": [],
+    "paths_version": 1
+  },
+  "requested_spec": "None",
+  "sha256": "f54bb9c3be12b24be327f4c1afccc2969712e0b091cdfbd1d763fb3e61cda03f",
+  "size": 29187,
+  "subdir": "linux-64",
+  "timestamp": 1757042549000,
+  "url": "https://conda.anaconda.org/conda-forge/linux-64/libgcc-ng-15.1.0-h69a702a_5.conda",
+  "version": "15.1.0"
+}
