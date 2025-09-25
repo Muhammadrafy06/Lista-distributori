@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Dettaglio Distributore #{{ d.id }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container my-4">
+  <a href="/" class="btn btn-link">&larr; Torna all'elenco</a>
+  <h3>#{{ d.id }} – {{ d.nome }}</h3>
+  <div class="text-muted">Provincia: <strong>{{ d.provincia }}</strong></div>
+  <div class="text-muted small">Coord: {{ '%.5f' % d.lat }}, {{ '%.5f' % d.lon }}</div>
+  <hr>
+  <div class="row g-3">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body">
+          <h5>Prezzi</h5>
+          <div class="badge text-bg-success">Benzina: € {{ '%.3f' % d.prezzo_benzina }}</div>
+          <div class="badge text-bg-secondary">Diesel: € {{ '%.3f' % d.prezzo_diesel }}</div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-body">
+          <h5>Livelli carburante</h5>
+          <div class="badge text-bg-primary">Benzina: {{ '{:,}'.format(d.livello_carburante.benzina).replace(',', '.') }} L</div>
+          <div class="badge text-bg-dark">Diesel: {{ '{:,}'.format(d.livello_carburante.diesel).replace(',', '.') }} L</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <hr>
+  <a class="btn btn-outline-primary" href="/mappa?focus={{ d.id }}">Vedi su mappa</a>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <title>Mappa Distributori</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+    crossorigin=""
+  />
+  <style>
+    #map { height: calc(100vh - 120px); }
+  </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg bg-dark navbar-dark">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="/">Iperstaroil</a>
+    <span class="navbar-text text-light">Mappa</span>
+  </div>
+</nav>
+<div id="map"></div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+  integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+  crossorigin=""></script>
+<script>
+const urlParams = new URLSearchParams(window.location.search);
+const focusId = urlParams.get('focus');
+
+const map = L.map('map');
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19,
+  attribution: '© OpenStreetMap'
+}).addTo(map);
+
+async function loadGeo() {
+  const res = await fetch('/api/distributori/geo');
+  const data = await res.json();
+  const markers = [];
+  let focusMarker = null;
+
+  data.features.forEach(f => {
+    const [lon, lat] = f.geometry.coordinates;
+    const p = f.properties;
+    const m = L.marker([lat, lon]).bindPopup(`
+      <strong>#${p.id} – ${p.nome}</strong><br>
+      Provincia: ${p.provincia}<br>
+      Prezzi: Benzina € ${p.prezzi.benzina.toFixed(3)} – Diesel € ${p.prezzi.diesel.toFixed(3)}<br>
+      Livelli: Benzina ${p.livello_carburante.benzina.toLocaleString()} L, Diesel ${p.livello_carburante.diesel.toLocaleString()} L<br>
+      <a href="/distributore/${p.id}">Dettaglio</a>
+    `);
+    m.addTo(map);
+    markers.push(m);
+    if (String(p.id) === String(focusId)) {
+      focusMarker = m;
+    }
+  });
+
+  if (focusMarker) {
+    map.setView(focusMarker.getLatLng(), 13);
+    focusMarker.openPopup();
+  } else if (markers.length) {
+    const group = L.featureGroup(markers);
+    map.fitBounds(group.getBounds().pad(0.2));
+  } else {
+    map.setView([42.5, 12.5], 6);
+  }
+}
+
+loadGeo();
+</script>
+</body>
+</html>
